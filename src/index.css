@@ -1,0 +1,165 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import 'katex/dist/katex.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink-900 text-ink-100 font-sans antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* subtle instrument grid behind the main canvas areas */
+.bg-grid {
+  background-color: #0b0d12;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+}
+
+.katex {
+  font-size: 1.06em;
+}
+.katex-display {
+  margin: 0.4em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+
+/* hoverable symbols inside equations (\hl{key}{…}).
+   KaTeX's absolutely-positioned layout spans (.vlist) overlap matrix cells, so they must not
+   capture the pointer, while the \hl regions themselves stay hit-testable. */
+.tex .vlist {
+  pointer-events: none;
+}
+.tex [data-hl],
+.tex [data-hl] * {
+  pointer-events: auto;
+}
+.tex [data-hl] {
+  cursor: help;
+  border-radius: 4px;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.tex [data-hl]:hover,
+.tex [data-hl].hl-active {
+  background-color: rgba(124, 196, 255, 0.16);
+  box-shadow: 0 0 0 2px rgba(124, 196, 255, 0.16);
+}
+
+/* range inputs */
+input[type='range'].qslider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='range'].qslider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--fill, #7cc4ff) 0 var(--pct, 50%), #2a3142 var(--pct, 50%) 100%);
+}
+input[type='range'].qslider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: #2a3142;
+}
+input[type='range'].qslider::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--fill, #7cc4ff);
+}
+input[type='range'].qslider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  margin-top: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #e3e6ec;
+  border: 3px solid var(--fill, #7cc4ff);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s ease;
+}
+input[type='range'].qslider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #e3e6ec;
+  border: 3px solid var(--fill, #7cc4ff);
+}
+input[type='range'].qslider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+input[type='range'].qslider:focus-visible {
+  outline: none;
+}
+input[type='range'].qslider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(124, 196, 255, 0.35);
+}
+
+/* scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3142 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2a3142;
+  border-radius: 8px;
+}
+
+.prose-q p {
+  @apply text-[14px] leading-relaxed text-ink-200;
+}
+.prose-q p + p {
+  @apply mt-2;
+}
+.prose-q strong {
+  @apply text-ink-100 font-semibold;
+}
+.prose-q em {
+  @apply text-ink-100;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fadein {
+  animation: fadein 0.25s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadein {
+    animation: none;
+  }
+}
