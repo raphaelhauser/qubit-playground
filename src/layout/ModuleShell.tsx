@@ -79,9 +79,13 @@ export function ModuleShell({
           </div>
         </>
       ) : (
-        <div className="grid gap-x-12 gap-y-7 lg:grid-cols-[minmax(0,1fr)_minmax(380px,520px)]">
-          <div className="min-w-0">
-            <Figure className="h-[min(92vw,460px)] sm:h-[500px] lg:sticky lg:top-[76px] lg:h-[calc(100vh-100px)] lg:max-h-[880px] lg:min-h-[480px]">{viz}</Figure>
+        <div className="grid gap-x-8 gap-y-5 md:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:grid-cols-[minmax(0,1fr)_minmax(380px,520px)] lg:gap-x-12">
+          {/* The figure stays in view while the notebook scrolls.
+              Phones: the whole figure cell pins under the top bar (its containing block is the bench),
+              with an opaque backdrop so the notes slide underneath it; very short screens don't pin.
+              ≥ 768px: the cell stretches to the height of the row and the figure inside it pins. */}
+          <div className="sticky top-14 z-20 -mx-4 min-w-0 border-b border-ink-800 bg-ink-900 px-4 pb-3 pt-1 md:static md:z-auto md:mx-0 md:border-0 md:bg-transparent md:p-0 [@media(max-height:560px)]:static">
+            <Figure className="h-[min(46vh,400px)] min-h-[250px] md:sticky md:top-[72px] md:h-[calc(100vh-92px)] md:max-h-[880px] md:min-h-[340px]">{viz}</Figure>
           </div>
           <div className="notebook min-w-0 space-y-8">
             {controlsBlock}

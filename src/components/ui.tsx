@@ -1,6 +1,6 @@
 import { ReactNode, useId } from 'react';
 import { Tex } from './Tex';
-import { useHoverKey } from './Highlight';
+import { useHighlight, useHoverKey } from './Highlight';
 import { COLORS } from '../theme';
 
 /** Outcome "−/1/↓" colours are drawn hollow (rule 4 of the visual grammar). */
@@ -189,15 +189,43 @@ export function Slider({
   marks?: { value: number; tex: string }[];
 }) {
   const id = useId();
-  const hover = useHoverKey();
+  const { setActive, showTip, showText, hideTip } = useHighlight();
   const pct = ((value - min) / (max - min)) * 100;
-  const hoverProps = hl ? hover(hl, hint) : {};
+  // Hovering anywhere on the slider links it to the figure (highlight only). The explanatory
+  // tooltip appears only over the label, above it, so it never covers the track being dragged.
+  const groupProps = hl
+    ? {
+        onMouseEnter: () => setActive(hl),
+        onMouseLeave: () => {
+          setActive(null);
+          hideTip();
+        },
+      }
+    : {};
+  const hasTip = !!(hint || hl);
+  const labelTipProps = hasTip
+    ? {
+        onMouseEnter: (e: React.MouseEvent) => {
+          // anchor spans label → track: the bubble goes above the label, or (no room) below the track
+          const lr = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          const gr = ((e.currentTarget as HTMLElement).closest('.group') as HTMLElement | null)?.getBoundingClientRect() ?? lr;
+          const r = new DOMRect(gr.left, lr.top, gr.width, gr.bottom - lr.top);
+          if (hint) showText(hint, r);
+          else showTip(hl!, r);
+        },
+        onMouseLeave: hideTip,
+      }
+    : {};
   // the "text" ink is the default bead colour; other colours (e.g. a phase hue) are kept
   const fill = color && color.toLowerCase() !== COLORS.text.toLowerCase() ? color : undefined;
   return (
-    <div className="group" {...hoverProps}>
+    <div className="group" {...groupProps}>
       <div className="mb-0.5 flex items-baseline justify-between gap-2">
-        <label htmlFor={id} className="text-[13.5px] text-ink-200">
+        <label
+          htmlFor={id}
+          {...labelTipProps}
+          className={`text-[13.5px] text-ink-200 ${hasTip ? 'cursor-help decoration-ink-500 decoration-dotted underline-offset-[5px] hover:underline' : ''}`}
+        >
           {tex ? <Tex>{tex}</Tex> : label}
           {tex && label ? <span className="ml-2 font-mono text-[10.5px] tracking-[0.04em] text-ink-400">{label}</span> : null}
         </label>
@@ -212,6 +240,7 @@ export function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
+        onPointerDown={hideTip}
         style={{ ['--pct' as string]: `${Math.max(0, Math.min(100, pct))}%`, ...(fill ? { ['--fill' as string]: fill } : {}) }}
       />
       {marks && (

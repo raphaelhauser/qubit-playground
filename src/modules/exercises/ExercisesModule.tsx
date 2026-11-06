@@ -203,8 +203,10 @@ function ProblemView({ problem }: { problem: Problem }) {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,600px)]">
-        <div className="min-w-0 xl:sticky xl:top-4 xl:self-start">
+      <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,520px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,600px)]">
+        {/* the visualization stays in view (below the top bar) while the steps scroll; a widget taller
+            than the screen scrolls inside its own column */}
+        <div className="notebook min-w-0 md:sticky md:top-[72px] md:max-h-[calc(100vh-88px)] md:self-start md:overflow-y-auto md:overscroll-contain">
           <Viz />
         </div>
         <div className="min-w-0 space-y-3">

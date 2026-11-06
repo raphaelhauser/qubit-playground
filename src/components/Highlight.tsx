@@ -80,13 +80,15 @@ export function HighlightProvider({ children, tips = {} }: { children: ReactNode
 function TipBubble({ tip }: { tip: Tip }) {
   const w = 280;
   const left = Math.max(8, Math.min(window.innerWidth - w - 8, tip.rect.left + tip.rect.width / 2 - w / 2));
-  const below = tip.rect.top < 110;
-  const top = below ? tip.rect.bottom + 8 : tip.rect.top - 8;
+  const below = tip.rect.top < 56 + 96; // keep clear of the sticky top bar
+  // Position with top/bottom rather than a transform: the fade-in animation animates `transform`
+  // and would override a translateY(-100%), dropping the bubble onto the element it explains.
+  const place = below ? { top: tip.rect.bottom + 8 } : { bottom: window.innerHeight - tip.rect.top + 8 };
   return (
     <div
       role="tooltip"
       className="pointer-events-none fixed z-[100] animate-fadein rounded-[8px] bg-ink-100 px-3 py-2 text-[13px] leading-snug text-ink-900 shadow-float"
-      style={{ left, top, width: w, transform: below ? undefined : 'translateY(-100%)' }}
+      style={{ left, width: w, ...place }}
     >
       {tip.text}
     </div>
