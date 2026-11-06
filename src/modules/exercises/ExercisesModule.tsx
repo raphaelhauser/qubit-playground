@@ -24,7 +24,7 @@ function ProgressBar({ solved, revealed, total }: { solved: number; revealed: nu
   return (
     <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-ink-700">
       <div className="h-full bg-good/80 transition-all" style={{ width: `${(100 * solved) / total}%` }} />
-      <div className="h-full bg-phase/70 transition-all" style={{ width: `${(100 * revealed) / total}%` }} />
+      <div className="h-full bg-ink-400 transition-all" style={{ width: `${(100 * revealed) / total}%` }} />
     </div>
   );
 }
@@ -43,9 +43,9 @@ function Overview() {
     { solved: 0, revealed: 0, total: 0 },
   );
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-4 pb-16 pt-5 lg:px-6">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-state/80">Practice</div>
-      <h1 className="text-[22px] font-semibold tracking-tight text-ink-100 lg:text-[26px]">Guided exercises</h1>
+    <div className="mx-auto w-full max-w-[1200px] px-4 pb-16 pt-7 lg:px-8">
+      <div className="font-mono text-[11px] tracking-[0.06em] text-ink-400">practice</div>
+      <h1 className="mt-1.5 text-[30px] font-semibold leading-[1.06] tracking-[-0.02em] text-ink-100 lg:text-[40px]">Guided exercises</h1>
       <div className="prose-q mt-2 max-w-[860px] text-ink-300">
         <p>
           Eleven problems on time evolution, Pauli algebra and spin measurement, each broken into one manageable question at a time. Type real answers — numbers, expressions, matrices, vectors — and they are checked
@@ -53,7 +53,7 @@ function Overview() {
           {<Tex>{'i'}</Tex>}). Hints unfold one by one; solutions appear after you have tried.
         </p>
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-ink-700/80 bg-ink-850/80 px-4 py-3">
+      <div className="mt-4 flex flex-wrap items-center gap-4 rounded-[10px] bg-ink-850 px-4 py-3 ring-1 ring-inset ring-ink-700">
         <div className="min-w-[200px] flex-1">
           <div className="mb-1.5 flex justify-between text-[12px] text-ink-300">
             <span>overall progress</span>
@@ -68,7 +68,7 @@ function Overview() {
             <span className="h-2 w-2 rounded-full bg-good" /> solved
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-phase" /> solution viewed
+            <span className="h-2 w-2 rounded-full bg-ink-400" /> solution viewed
           </span>
         </div>
         {all.solved + all.revealed > 0 && (
@@ -90,11 +90,11 @@ function Overview() {
                 <button
                   key={p.id}
                   onClick={() => navigate(`/exercises/${p.id}`)}
-                  className="group rounded-xl border border-ink-700/80 bg-ink-850/70 p-4 text-left transition-colors hover:border-ink-500 hover:bg-ink-800"
+                  className="group rounded-[10px] p-4 text-left ring-1 ring-inset ring-ink-700 transition-colors hover:bg-ink-850 hover:ring-ink-500"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                      <div className="font-mono text-[10.5px] tracking-[0.05em] text-ink-400">
                         {p.group} · {p.part}
                       </div>
                       <div className="mt-0.5 text-[14.5px] font-semibold text-ink-100">{p.title}</div>
@@ -169,7 +169,7 @@ function ProblemView({ problem }: { problem: Problem }) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 pb-16 pt-5 lg:px-6">
+    <div className="mx-auto w-full max-w-[1560px] px-4 pb-16 pt-7 lg:px-8">
       <nav className="mb-2 flex flex-wrap items-center gap-1.5 text-[12px] text-ink-400">
         <button className="hover:text-ink-200" onClick={() => navigate('/exercises')}>
           Guided exercises
@@ -178,7 +178,7 @@ function ProblemView({ problem }: { problem: Problem }) {
         <span>{problem.group}</span>
       </nav>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-[22px] font-semibold tracking-tight text-ink-100 lg:text-[26px]">
+        <h1 className="mt-1.5 text-[30px] font-semibold leading-[1.06] tracking-[-0.02em] text-ink-100 lg:text-[40px]">
           <span className="mr-2 text-ink-400">{problem.part}.</span>
           {problem.title}
         </h1>
@@ -193,12 +193,12 @@ function ProblemView({ problem }: { problem: Problem }) {
       </div>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
-        <div className="rounded-xl border border-ink-700/80 bg-ink-850/80 px-4 py-3">
-          <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">The problem</div>
+        <div className="rounded-[10px] bg-ink-850 px-4 py-3 ring-1 ring-inset ring-ink-700">
+          <div className="mb-1.5 font-mono text-[10.5px] tracking-[0.05em] text-ink-400">the problem</div>
           <div className="prose-q text-[13.5px] text-ink-100">{problem.statement}</div>
         </div>
-        <div className="rounded-xl border border-state/20 bg-state/[0.04] px-4 py-3">
-          <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-state">The idea</div>
+        <div className="border-l-2 border-ink-400 py-1 pl-4">
+          <div className="mb-1.5 font-mono text-[10.5px] tracking-[0.05em] text-ink-400">the idea</div>
           <div className="prose-q text-[13.5px]">{problem.intro}</div>
         </div>
       </div>
@@ -228,13 +228,13 @@ function ProblemView({ problem }: { problem: Problem }) {
           )}
 
           {complete && (
-            <div className="animate-fadein rounded-xl border border-good/30 bg-good/[0.06] px-4 py-3">
+            <div className="animate-fadein border-l-2 border-good/70 py-1 pl-4">
               <div className="flex items-center gap-2 text-[13.5px] font-semibold text-good">{Icon.check} All steps done.</div>
             </div>
           )}
 
           {/* full solution */}
-          <div className="rounded-xl border border-ink-700/80 bg-ink-850/90 p-4">
+          <div className="rounded-[10px] bg-ink-850 p-4 ring-1 ring-inset ring-ink-700">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-[13.5px] font-semibold text-ink-100">Complete solution</div>
               {!showFull && !complete && !confirmFull && (
@@ -259,7 +259,7 @@ function ProblemView({ problem }: { problem: Problem }) {
           </div>
 
           {/* intuition */}
-          <div className="rounded-xl border border-phase/25 bg-phase/[0.05] p-4">
+          <div className="rounded-[10px] p-4 ring-1 ring-inset ring-ink-600">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-100">
                 <span className="text-phase">{Icon.bulb}</span> Physical intuition

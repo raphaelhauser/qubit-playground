@@ -2,6 +2,17 @@ import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { COLORS } from '../theme';
 import { Tex } from './Tex';
 import { useHighlight, useHoverKey } from './Highlight';
+import { isHollow } from './ui';
+
+/** Filled for outcome +/0/↑, hatched outline for −/1/↓ (rule 4 of the visual grammar). */
+export function barFill(color: string): React.CSSProperties {
+  if (isHollow(color))
+    return {
+      backgroundImage: `repeating-linear-gradient(135deg, ${color} 0 1.3px, transparent 1.3px 4.6px)`,
+      boxShadow: `inset 0 0 0 1.3px ${color}`,
+    };
+  return { background: color };
+}
 
 // ---------------------------------------------------------------------------
 // Probability bars
@@ -26,12 +37,13 @@ export function ProbabilityBars({ items, digits = 3 }: { items: ProbItem[]; digi
         const hot = active !== null && active === it.hl;
         const p = Math.max(0, Math.min(1, it.p));
         return (
-          <div key={i} className="grid grid-cols-[minmax(52px,auto)_1fr_52px] items-center gap-2.5" {...(it.hl ? hover(it.hl) : {})}>
+          <div key={i} className="grid grid-cols-[minmax(52px,auto)_1fr_48px] items-center gap-3" {...(it.hl ? hover(it.hl) : {})}>
             <div className="text-[13px] text-ink-200">
               <Tex>{it.label}</Tex>
             </div>
-            <div className={`relative h-[14px] overflow-hidden rounded-[4px] bg-ink-750 ring-1 ring-inset ${hot ? 'ring-ink-400' : 'ring-ink-700'}`}>
-              <div className="absolute inset-y-0 left-0 rounded-[3px] transition-[width] duration-150 ease-out" style={{ width: `${p * 100}%`, background: it.color, opacity: 0.85 }} />
+            <div className="relative h-[12px]">
+              <div className={`absolute inset-x-0 bottom-0 h-px ${hot ? 'bg-ink-300' : 'bg-ink-600'}`} />
+              <div className="absolute inset-y-[1px] left-0 rounded-[2px] transition-[width] duration-150 ease-out" style={{ width: `${p * 100}%`, ...barFill(it.color) }} />
               {it.compare !== undefined && (
                 <div className="absolute inset-y-0 w-[2px] bg-ink-100" style={{ left: `calc(${Math.max(0, Math.min(1, it.compare)) * 100}% - 1px)` }} title="simulated" />
               )}
@@ -159,7 +171,7 @@ export function LinePlot({
           {yt.map((t) => (
             <g key={t.value}>
               <line x1={pad.l} x2={W - pad.r} y1={ty(t.value)} y2={ty(t.value)} stroke={COLORS.grid} />
-              <text x={pad.l - 6} y={ty(t.value) + 3.5} fill={COLORS.faint} fontSize={10} textAnchor="end" fontFamily="JetBrains Mono">
+              <text x={pad.l - 6} y={ty(t.value) + 3.5} fill={COLORS.faint} fontSize={10} textAnchor="end" fontFamily="IBM Plex Mono">
                 {t.label}
               </text>
             </g>
@@ -167,7 +179,7 @@ export function LinePlot({
           {(xTicks ?? []).map((t) => (
             <g key={t.value}>
               <line x1={tx(t.value)} x2={tx(t.value)} y1={pad.t} y2={pad.t + ih} stroke={COLORS.grid} strokeDasharray="2 3" />
-              <text x={tx(t.value)} y={pad.t + ih + 13} fill={COLORS.faint} fontSize={10} textAnchor="middle" fontFamily="JetBrains Mono">
+              <text x={tx(t.value)} y={pad.t + ih + 13} fill={COLORS.faint} fontSize={10} textAnchor="middle" fontFamily="IBM Plex Mono">
                 {t.label}
               </text>
             </g>
@@ -274,7 +286,7 @@ export function Histogram({
             <div key={i} className="flex flex-1 flex-col items-center">
               {/* bar area: bar and theory line share one coordinate system */}
               <div className="relative w-full max-w-[88px]" style={{ height }}>
-                <div className="absolute inset-x-2 bottom-0 rounded-t-[4px] transition-[height] duration-150" style={{ height: H(f), background: b.color, opacity: 0.85 }} />
+                <div className="absolute inset-x-2 bottom-0 rounded-t-[4px] transition-[height] duration-150" style={{ height: H(f), ...barFill(b.color) }} />
                 {b.expected > 0 && (
                   <div className="absolute inset-x-0 border-t-2 border-dashed border-ink-100/70" style={{ bottom: H(b.expected) }} title={`theory ${(100 * b.expected).toFixed(1)}%`} />
                 )}

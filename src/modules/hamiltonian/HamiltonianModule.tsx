@@ -507,7 +507,7 @@ function HamiltonianPlayground() {
             explanation={
               <>
                 <p>
-                  The dashed gold ghost (evolved with <Tex>{'H + 1.5I'}</Tex>) sits exactly on the blue trajectory. Since <Tex>{'I'}</Tex> commutes with everything,{' '}
+                  The dashed ghost (evolved with <Tex>{'H + 1.5I'}</Tex>) sits exactly on the trajectory. Since <Tex>{'I'}</Tex> commutes with everything,{' '}
                   <Tex>{'e^{-i(H+cI)t} = e^{-ict}\\,e^{-iHt}'}</Tex>: only a global phase is added.
                 </p>
                 <p>Observable dynamics depend on energy <em>differences</em> (here 2r), never on the absolute zero of energy.</p>

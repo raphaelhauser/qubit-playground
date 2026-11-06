@@ -1,14 +1,18 @@
-@import '@fontsource-variable/inter';
-@import '@fontsource/jetbrains-mono/400.css';
-@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/source-serif-4/opsz-italic.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 @import 'katex/dist/katex.min.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Theme variables are written by src/theme.ts; these defaults only cover the first paint. */
 :root {
-  color-scheme: dark;
+  --ink-900: 18 18 17;
+  --ink-100: 242 238 229;
+  --phase-wheel: conic-gradient(#f08a6c, #b9b24f, #53b7c4, #a98ae6, #f08a6c);
 }
 
 html,
@@ -18,31 +22,40 @@ body,
 }
 
 body {
-  @apply bg-ink-900 text-ink-100 font-sans antialiased;
-  font-feature-settings: 'cv11', 'ss01';
+  @apply bg-ink-900 font-serif text-ink-200 antialiased;
+  font-size: 15px;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
 }
 
-/* subtle instrument grid behind the main canvas areas */
+::selection {
+  background: rgb(var(--ink-100) / 0.18);
+}
+
+/* ---------------------------------------------------------------------------
+   Figure field: faint drafting dots behind every visualization
+   --------------------------------------------------------------------------- */
 .bg-grid {
-  background-color: #0b0d12;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 28px 28px;
-  background-position: -1px -1px;
+  background-color: rgb(var(--ink-900));
+  background-image: radial-gradient(rgb(var(--ink-500) / 0.42) 0.9px, transparent 1.3px);
+  background-size: 24px 24px;
+  background-position: 12px 12px;
 }
 
+/* ---------------------------------------------------------------------------
+   Mathematics
+   --------------------------------------------------------------------------- */
 .katex {
-  font-size: 1.06em;
+  font-size: 1.08em;
 }
 .katex-display {
-  margin: 0.4em 0;
+  margin: 0.45em 0;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 2px 0;
 }
 
-/* hoverable symbols inside equations (\hl{key}{…}).
+/* Hoverable symbols (\hl{key}{…}) carry a quiet dotted underline so they are discoverable.
    KaTeX's absolutely-positioned layout spans (.vlist) overlap matrix cells, so they must not
    capture the pointer, while the \hl regions themselves stay hit-testable. */
 .tex .vlist {
@@ -54,100 +67,136 @@ body {
 }
 .tex [data-hl] {
   cursor: help;
-  border-radius: 4px;
+  border-radius: 3px;
+  background-image: linear-gradient(to right, rgb(var(--ink-400) / 0.9) 45%, transparent 45%);
+  background-size: 4px 1px;
+  background-repeat: repeat-x;
+  background-position: 0 calc(100% - 0.02em);
   transition:
     background-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 .tex [data-hl]:hover,
 .tex [data-hl].hl-active {
-  background-color: rgba(124, 196, 255, 0.16);
-  box-shadow: 0 0 0 2px rgba(124, 196, 255, 0.16);
+  background-color: rgb(var(--ink-100) / 0.11);
+  box-shadow: 0 0 0 2px rgb(var(--ink-100) / 0.11);
 }
 
-/* range inputs */
+/* ---------------------------------------------------------------------------
+   Range inputs: a hairline rule with an ink bead
+   --------------------------------------------------------------------------- */
 input[type='range'].qslider {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 22px;
+  height: 20px;
   background: transparent;
   cursor: pointer;
 }
 input[type='range'].qslider::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(to right, var(--fill, #7cc4ff) 0 var(--pct, 50%), #2a3142 var(--pct, 50%) 100%);
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--fill, rgb(var(--ink-100))) 0 var(--pct, 50%),
+    rgb(var(--ink-600)) var(--pct, 50%) 100%
+  );
 }
 input[type='range'].qslider::-moz-range-track {
-  height: 4px;
-  border-radius: 999px;
-  background: #2a3142;
+  height: 2px;
+  background: rgb(var(--ink-600));
 }
 input[type='range'].qslider::-moz-range-progress {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--fill, #7cc4ff);
+  height: 2px;
+  background: var(--fill, rgb(var(--ink-100)));
 }
 input[type='range'].qslider::-webkit-slider-thumb {
   -webkit-appearance: none;
   margin-top: -6px;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 999px;
-  background: #e3e6ec;
-  border: 3px solid var(--fill, #7cc4ff);
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35);
+  background: var(--fill, rgb(var(--ink-100)));
+  border: 3px solid rgb(var(--ink-900));
+  box-shadow: 0 0 0 1px var(--fill, rgb(var(--ink-100)));
   transition: transform 0.12s ease;
 }
 input[type='range'].qslider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 9px;
+  height: 9px;
   border-radius: 999px;
-  background: #e3e6ec;
-  border: 3px solid var(--fill, #7cc4ff);
+  background: var(--fill, rgb(var(--ink-100)));
+  border: 3px solid rgb(var(--ink-900));
+  box-shadow: 0 0 0 1px var(--fill, rgb(var(--ink-100)));
 }
 input[type='range'].qslider:active::-webkit-slider-thumb {
-  transform: scale(1.15);
+  transform: scale(1.2);
 }
 input[type='range'].qslider:focus-visible {
   outline: none;
 }
 input[type='range'].qslider:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 4px rgba(124, 196, 255, 0.35);
+  box-shadow:
+    0 0 0 1px var(--fill, rgb(var(--ink-100))),
+    0 0 0 5px rgb(var(--ink-100) / 0.18);
 }
 
-/* scrollbars */
+/* ---------------------------------------------------------------------------
+   Scrollbars
+   --------------------------------------------------------------------------- */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a3142 transparent;
+  scrollbar-color: rgb(var(--ink-600)) transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #2a3142;
+  background: rgb(var(--ink-600));
   border-radius: 8px;
 }
 
+/* ---------------------------------------------------------------------------
+   Reading text
+   --------------------------------------------------------------------------- */
 .prose-q p {
-  @apply text-[14px] leading-relaxed text-ink-200;
+  @apply text-[14.5px] leading-[1.62] text-ink-200;
 }
 .prose-q p + p {
-  @apply mt-2;
+  @apply mt-2.5;
 }
 .prose-q strong {
-  @apply text-ink-100 font-semibold;
+  @apply font-semibold text-ink-100;
 }
 .prose-q em {
   @apply text-ink-100;
 }
 
+/* The phase wheel as a reusable swatch */
+.phase-wheel {
+  background: var(--phase-wheel);
+}
+
+/* ---------------------------------------------------------------------------
+   The lab bench: controls and notes live in a side column; grids that modules lay out for the
+   full page width collapse to one column when that column is narrow.
+   --------------------------------------------------------------------------- */
+.notebook {
+  container-type: inline-size;
+}
+@container (max-width: 620px) {
+  .notebook [class*='md:grid-cols-'],
+  .notebook [class*='lg:grid-cols-'],
+  .notebook [class*='xl:grid-cols-'] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
 @keyframes fadein {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(3px);
   }
   to {
     opacity: 1;

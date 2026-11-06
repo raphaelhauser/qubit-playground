@@ -60,11 +60,11 @@ import { GateId, Step, buildStep, pathAt, runCircuit, tipPath, durationFor, FIXE
 const TIPS: Record<string, string> = {
   U: 'U — the selected gate. Every single-qubit unitary is a rotation of the Bloch sphere, up to a global phase.',
   gphase: 'e^{iα} — global phase of the gate. Multiplies every amplitude equally; invisible on the Bloch sphere.',
-  axis: 'n — rotation axis of the gate on the Bloch sphere (violet).',
+  axis: 'n — rotation axis of the gate on the Bloch sphere (dashed line).',
   angle: 'θ — rotation angle about n (right-hand rule). Note the θ/2 inside the matrix.',
   before: 'State before the gate (faint arrow).',
   after: 'State after the gate.',
-  psi: '|ψ⟩ — the current state (blue arrow).',
+  psi: '|ψ⟩ — the current state (ink arrow).',
 };
 
 const SYMBOLIC: Record<GateId, string> = {
@@ -94,12 +94,12 @@ const DESCRIPTIONS: Record<GateId, string> = {
 };
 
 const CARDINALS: { tex: string; v: Vec3; color: string }[] = [
-  { tex: '|0\\rangle', v: [0, 0, 1], color: COLORS.z },
-  { tex: '|1\\rangle', v: [0, 0, -1], color: COLORS.z },
-  { tex: '|{+}\\rangle', v: [1, 0, 0], color: COLORS.x },
-  { tex: '|{-}\\rangle', v: [-1, 0, 0], color: COLORS.x },
-  { tex: '|{+i}\\rangle', v: [0, 1, 0], color: COLORS.y },
-  { tex: '|{-i}\\rangle', v: [0, -1, 0], color: COLORS.y },
+  { tex: '|0\\rangle', v: [0, 0, 1], get color() { return COLORS.z; } },
+  { tex: '|1\\rangle', v: [0, 0, -1], get color() { return COLORS.z; } },
+  { tex: '|{+}\\rangle', v: [1, 0, 0], get color() { return COLORS.x; } },
+  { tex: '|{-}\\rangle', v: [-1, 0, 0], get color() { return COLORS.x; } },
+  { tex: '|{+i}\\rangle', v: [0, 1, 0], get color() { return COLORS.y; } },
+  { tex: '|{-i}\\rangle', v: [0, -1, 0], get color() { return COLORS.y; } },
 ];
 const CARD_STATES: Vec2[] = CARDINALS.map((c) => stateFromBloch(c.v));
 

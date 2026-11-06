@@ -247,7 +247,7 @@ export function GroupTab({ header }: { header: (viz: ReactNode, controls: ReactN
             <Tex>{'\\|U(-t) - U(t)^\\dagger\\|'}</Tex> = <Tex>{texSci(invErr)}</Tex> {!hermitian && '(fails: not unitary)'}
           </Check>
         </div>
-        <KV k="blue + gold arcs end at the grey arrow" v={groupErr < 1e-9 ? 'yes' : 'no'} />
+        <KV k="both arcs end at the faint arrow" v={groupErr < 1e-9 ? 'yes' : 'no'} />
         <p className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
           The group law holds for every exponent (even non-Hermitian): <Tex>{'sA'}</Tex> and <Tex>{'tA'}</Tex> commute, so <Tex>{'e^{sA}e^{tA} = e^{(s+t)A}'}</Tex>. For non-commuting exponents{' '}
           <Tex>{'e^{A}e^{B} \\ne e^{A+B}'}</Tex> in general — see the Pauli algebra module.

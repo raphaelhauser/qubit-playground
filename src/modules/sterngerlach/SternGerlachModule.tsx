@@ -3,7 +3,7 @@ import { ModuleShell } from '../../layout/ModuleShell';
 import { BlochCanvas, StateArrow, AxisLine, PointMarker, Arrow } from '../../components/bloch';
 import { Histogram } from '../../components/charts';
 import { Tex } from '../../components/Tex';
-import { Card, Slider, Button, KV, Callout, Label, Segmented, Toggle } from '../../components/ui';
+import { Card, Slider, Button, KV, Callout, Label, Segmented, Toggle, PhaseWheel } from '../../components/ui';
 import { PlaybackBar } from '../../components/Playback';
 import { PredictionCard } from '../../components/Prediction';
 import { HighlightProvider } from '../../components/Highlight';
@@ -297,10 +297,10 @@ function SGInner() {
         showClassical={showClassical}
         drawKey={drawKey}
       />
-      <div className="pointer-events-none absolute left-3 top-3 hidden max-w-[46%] flex-wrap sm:flex gap-x-3 gap-y-1 rounded-lg bg-ink-900/75 px-3 py-1.5 text-[11.5px] text-ink-300 ring-1 ring-ink-700 backdrop-blur">
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: '#cfd6e4' }} /> not yet measured</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: COLORS.p0 }} /> last outcome +</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: COLORS.p1 }} /> last outcome −</span>
+      <div className="pointer-events-none absolute left-3 top-3 hidden max-w-[46%] flex-wrap sm:flex gap-x-3 gap-y-1 rounded-lg bg-ink-900/80 px-3 py-1.5 font-mono text-[10.5px] text-ink-300 ring-1 ring-ink-700 backdrop-blur">
+        <span className="inline-flex items-center gap-1.5"><PhaseWheel size={11} /> colour = phase of the atom's state</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: COLORS.state }} /> on the z axis</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: COLORS.p0 }} />/<span className="h-2 w-2 rounded-full" style={{ boxShadow: `inset 0 0 0 1.3px ${COLORS.p1}` }} /> last outcome + / −</span>
       </div>
       <div className="pointer-events-none absolute right-3 top-3 hidden max-w-[50%] rounded-lg text-right sm:block bg-ink-900/75 px-3 py-1.5 font-mono text-[11.5px] text-ink-300 ring-1 ring-ink-700 backdrop-blur">
         emitted <span className="text-ink-100">{stats.emitted}</span>{stats.queued > 0 && <> · queued <span className="text-ink-100">{stats.queued}</span></>} · in flight <span className="text-ink-100">{stats.inFlight}</span> · blocked{' '}

@@ -1,9 +1,11 @@
 import { ReactNode, useState } from 'react';
-import { Button, Icon } from './ui';
+import { Button } from './ui';
+
+const LETTERS = 'abcdefgh';
 
 /**
- * "Predict, then observe." The learner commits to a prediction before the result is shown.
- * `onRun` lets the host module run the actual experiment in its visualization.
+ * "Predict, then observe." Set like an exam question: the learner commits to one lettered answer
+ * before the experiment runs. `onRun` lets the host module run the actual experiment.
  */
 export function PredictionCard({
   question,
@@ -12,7 +14,7 @@ export function PredictionCard({
   explanation,
   onRun,
   onReset,
-  runLabel = 'Lock in & run experiment',
+  runLabel = 'commit & run',
 }: {
   question: ReactNode;
   options: { id: string; label: ReactNode }[];
@@ -26,37 +28,46 @@ export function PredictionCard({
   const [revealed, setRevealed] = useState(false);
   const correct = choice === answer;
   return (
-    <div className="rounded-xl border border-phase/25 bg-gradient-to-b from-phase/[0.07] to-transparent p-3.5">
-      <div className="mb-2 flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-phase">
-        {Icon.bulb} Predict first
+    <section className="rounded-[10px] bg-ink-850 px-4 pb-4 pt-3.5 ring-1 ring-inset ring-ink-700">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-mono text-[10.5px] tracking-[0.05em] text-ink-400">predict first</span>
+        <span className="font-mono text-[10.5px] text-ink-500">{revealed ? 'observed' : 'commit to one answer'}</span>
       </div>
-      <div className="prose-q mb-2.5 text-[13.5px] text-ink-100">{question}</div>
-      <div className="space-y-1.5">
-        {options.map((o) => {
+      <div className="prose-q mb-3 text-[15px] leading-snug text-ink-100">{question}</div>
+      <ol className="space-y-1">
+        {options.map((o, i) => {
           const sel = choice === o.id;
-          const showRight = revealed && o.id === answer;
-          const showWrong = revealed && sel && o.id !== answer;
+          const isAns = o.id === answer;
+          const mark = revealed ? (isAns ? '✓' : sel ? '✗' : '') : '';
           return (
-            <button
-              key={o.id}
-              disabled={revealed}
-              onClick={() => setChoice(o.id)}
-              className={`flex w-full items-start gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] ring-1 ring-inset transition-colors ${
-                showRight
-                  ? 'bg-good/10 text-ink-100 ring-good/50'
-                  : showWrong
-                    ? 'bg-bad/10 text-ink-100 ring-bad/40'
-                    : sel
-                      ? 'bg-ink-700 text-ink-100 ring-state/50'
-                      : 'bg-ink-800/60 text-ink-200 ring-ink-700 hover:bg-ink-750'
-              }`}
-            >
-              <span className={`mt-[3px] h-3 w-3 shrink-0 rounded-full border ${sel ? 'border-state bg-state' : 'border-ink-400'}`} />
-              <span className="min-w-0">{o.label}</span>
-            </button>
+            <li key={o.id}>
+              <button
+                disabled={revealed}
+                onClick={() => setChoice(o.id)}
+                className={`group flex w-full items-start gap-3 rounded-[6px] px-2.5 py-1.5 text-left text-[14px] leading-snug transition-colors ${
+                  revealed && isAns
+                    ? 'bg-good/10 text-ink-100'
+                    : revealed && sel
+                      ? 'bg-bad/10 text-ink-100'
+                      : sel
+                        ? 'bg-ink-750 text-ink-100'
+                        : 'text-ink-200 hover:bg-ink-800'
+                } ${revealed && !isAns && !sel ? 'opacity-55' : ''}`}
+              >
+                <span
+                  className={`mt-[1px] flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-full font-mono text-[10.5px] ${
+                    sel ? 'bg-ink-100 text-ink-900' : 'text-ink-400 ring-1 ring-inset ring-ink-500 group-hover:ring-ink-300'
+                  }`}
+                >
+                  {LETTERS[i]}
+                </span>
+                <span className="min-w-0 flex-1">{o.label}</span>
+                {mark && <span className={`font-mono text-[13px] ${isAns ? 'text-good' : 'text-bad'}`}>{mark}</span>}
+              </button>
+            </li>
           );
         })}
-      </div>
+      </ol>
       <div className="mt-3 flex items-center gap-2">
         {!revealed ? (
           <Button
@@ -79,18 +90,18 @@ export function PredictionCard({
               onReset?.();
             }}
           >
-            Try again
+            try again
           </Button>
         )}
       </div>
       {revealed && (
-        <div className="mt-3 animate-fadein rounded-lg bg-ink-800/80 p-3 ring-1 ring-inset ring-ink-700">
-          <div className={`mb-1 text-[12.5px] font-semibold ${correct ? 'text-good' : 'text-p1'}`}>
-            {correct ? 'Your prediction was right.' : 'Not quite — look at the visualization.'}
+        <div className="mt-3 animate-fadein border-t border-ink-700 pt-3">
+          <div className={`mb-1.5 font-mono text-[11px] tracking-[0.03em] ${correct ? 'text-good' : 'text-bad'}`}>
+            {correct ? 'your prediction holds' : 'not what happens — compare with the figure'}
           </div>
-          <div className="prose-q text-[13px]">{explanation}</div>
+          <div className="prose-q text-[14px]">{explanation}</div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -1,37 +1,32 @@
 /** @type {import('tailwindcss').Config} */
+const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+const shades = [950, 900, 850, 800, 750, 700, 600, 500, 400, 300, 200, 100];
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        ink: {
-          950: '#07080b',
-          900: '#0b0d12',
-          850: '#0f1218',
-          800: '#141820',
-          750: '#191e28',
-          700: '#1f2531',
-          600: '#2a3142',
-          500: '#3b4458',
-          400: '#5b6478',
-          300: '#8b93a7',
-          200: '#b8bfcd',
-          100: '#e3e6ec',
-        },
-        state: '#7cc4ff',
-        axis: '#c49bff',
-        phase: '#f2c14e',
-        p0: '#4fd1c5',
-        p1: '#f78c6c',
-        good: '#6ee7a8',
-        bad: '#ff8a8a',
+        // neutral scale, mirrored between the dark and light themes (100 = strongest ink)
+        ink: Object.fromEntries(shades.map((s) => [s, v(`ink-${s}`)])),
+        state: v('c-state'),
+        axis: v('c-axis'),
+        phase: v('c-phase'),
+        p0: v('c-p0'),
+        p1: v('c-p1'),
+        good: v('c-good'),
+        bad: v('c-bad'),
       },
       fontFamily: {
-        sans: ['"Inter Variable"', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        // reading text and UI copy are set in a text serif that sits well next to KaTeX's Computer Modern
+        sans: ['"Source Serif 4 Variable"', '"Source Serif 4"', 'Georgia', 'serif'],
+        serif: ['"Source Serif 4 Variable"', '"Source Serif 4"', 'Georgia', 'serif'],
+        // instrument labels, numbers and controls
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       boxShadow: {
-        panel: '0 1px 0 0 rgba(255,255,255,0.03) inset, 0 10px 30px -12px rgba(0,0,0,0.6)',
+        panel: '0 0 0 0 transparent',
+        float: '0 18px 50px -20px rgb(0 0 0 / 0.45)',
       },
     },
   },

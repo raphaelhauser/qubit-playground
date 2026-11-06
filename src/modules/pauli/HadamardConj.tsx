@@ -235,7 +235,7 @@ export function HadamardControls({ hc }: { hc: HC }) {
           <Button size="sm" onClick={() => hc.setPsi(stateFromAngles(1.0, 2.2))}>generic</Button>
         </div>
         <p className="mt-3 text-[12.5px] leading-relaxed text-ink-400">
-          The golden ghost is where a single <Tex>{rotName(hc.nPrime, '\\theta')}</Tex> would take the input. Step through the three gates and watch the blue state land on it — for
+          The pencil ghost is where a single <Tex>{rotName(hc.nPrime, '\\theta')}</Tex> would take the input. Step through the three gates and watch the ink state land on it — for
           every input, which is what an operator identity means.
         </p>
       </Card>

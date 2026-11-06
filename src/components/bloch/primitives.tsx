@@ -1,9 +1,10 @@
-import { Line } from '@react-three/drei';
+import { Billboard, Line } from '@react-three/drei';
 import { ThreeEvent, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Vec3, rotate3, dot3, scale3, sub3, len3, normalize3, cross3 } from '../../quantum';
-import { COLORS } from '../../theme';
+import { COLORS, phaseColor } from '../../theme';
+import { isHollow } from '../ui';
 import { Label3D, toThree, fromThree, circlePoints, tv } from './BlochCanvas';
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -16,11 +17,10 @@ const quatFor = (dir: THREE.Vector3) => new THREE.Quaternion().setFromUnitVector
 export function Arrow({
   v,
   color = COLORS.state,
-  radius = 0.022,
-  headLength = 0.12,
-  headRadius = 0.055,
+  radius = 0.016,
+  headLength = 0.11,
+  headRadius = 0.045,
   opacity = 1,
-  emissive = 0.35,
   label,
   labelColor,
 }: {
@@ -30,6 +30,7 @@ export function Arrow({
   headLength?: number;
   headRadius?: number;
   opacity?: number;
+  /** kept for API compatibility; arrows are drawn flat, like ink */
   emissive?: number;
   label?: string;
   labelColor?: string;
@@ -44,60 +45,105 @@ export function Arrow({
     <group>
       <group quaternion={q}>
         <mesh position={[0, shaft / 2, 0]}>
-          <cylinderGeometry args={[radius, radius, shaft, 20]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={emissive} transparent={transparent} opacity={opacity} depthWrite={!transparent} roughness={0.4} />
+          <cylinderGeometry args={[radius, radius, shaft, 16]} />
+          <meshBasicMaterial color={color} transparent={transparent} opacity={opacity} depthWrite={!transparent} />
         </mesh>
         <mesh position={[0, shaft + headLength / 2, 0]}>
           <coneGeometry args={[headRadius, headLength, 24]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={emissive} transparent={transparent} opacity={opacity} depthWrite={!transparent} roughness={0.4} />
+          <meshBasicMaterial color={color} transparent={transparent} opacity={opacity} depthWrite={!transparent} />
         </mesh>
       </group>
-      {label && <Label3D position={scale3(v, 1 + 0.22 / Math.max(len, 0.3))} tex={label} color={labelColor ?? color} size={13} />}
+      {label && <Label3D position={scale3(v, 1 + 0.22 / Math.max(len, 0.3))} tex={label} color={labelColor ?? color} size={13.5} />}
     </group>
   );
 }
 
-/** The Bloch vector of the state, with a soft glow at the tip. */
-export function StateArrow({ v, color = COLORS.state, label, opacity = 1, emphasized = false }: { v: Vec3; color?: string; label?: string; opacity?: number; emphasized?: boolean }) {
+/** Hue of the relative phase of a Bloch vector (its azimuth), or null at the poles. */
+const azimuthHue = (v: Vec3): string | null => (Math.hypot(v[0], v[1]) > 0.04 ? phaseColor(Math.atan2(v[1], v[0])) : null);
+
+/**
+ * The Bloch vector of the state, drawn in ink. Its tip and a tick on the equator below it carry
+ * the hue of the state's relative phase φ — the same colour its |1⟩ amplitude has in the complex plane.
+ */
+export function StateArrow({
+  v,
+  color = COLORS.state,
+  label,
+  opacity = 1,
+  emphasized = false,
+  phaseTick = true,
+}: {
+  v: Vec3;
+  color?: string;
+  label?: string;
+  opacity?: number;
+  emphasized?: boolean;
+  phaseTick?: boolean;
+}) {
+  const isInk = color.toLowerCase() === COLORS.state.toLowerCase();
+  const hue = isInk ? azimuthHue(v) : null;
+  const rho = Math.hypot(v[0], v[1]);
+  const tick: Vec3 | null = hue && phaseTick && len3(v) > 0.5 ? [v[0] / rho, v[1] / rho, 0] : null;
   return (
     <group>
-      <Arrow v={v} color={color} opacity={opacity} radius={emphasized ? 0.028 : 0.022} label={label} />
+      <Arrow v={v} color={color} opacity={opacity} radius={emphasized ? 0.022 : 0.016} label={label} />
       <mesh position={tv(v)}>
-        <sphereGeometry args={[emphasized ? 0.05 : 0.038, 20, 16]} />
-        <meshBasicMaterial color={color} transparent opacity={0.9 * opacity} />
+        <sphereGeometry args={[emphasized ? 0.05 : 0.04, 20, 16]} />
+        <meshBasicMaterial color={hue ?? color} transparent opacity={opacity} />
       </mesh>
+      {tick && (
+        <>
+          <Line points={[toThree(v), toThree([v[0], v[1], 0])]} color={hue!} lineWidth={1} dashed dashSize={0.035} gapSize={0.03} transparent opacity={0.75 * opacity} />
+          <mesh position={tv(tick)}>
+            <sphereGeometry args={[0.03, 16, 12]} />
+            <meshBasicMaterial color={hue!} transparent opacity={opacity} />
+          </mesh>
+        </>
+      )}
     </group>
   );
 }
 
-/** A labelled point on (or in) the sphere, e.g. an eigenstate. */
+/** A labelled point on (or in) the sphere, e.g. an eigenstate. Outcome "−" colours are drawn hollow. */
 export function PointMarker({ v, color, label, size = 0.045, opacity = 1, ring = false }: { v: Vec3; color: string; label?: string; size?: number; opacity?: number; ring?: boolean }) {
   const n = toThree(v);
+  const hollow = isHollow(color);
   return (
     <group>
-      <mesh position={n}>
-        <sphereGeometry args={[size, 20, 16]} />
-        <meshBasicMaterial color={color} transparent opacity={opacity} />
-      </mesh>
-      {ring && (
-        <Line points={circlePoints(normalize3(v), v, size * 2.2, 40)} color={color} lineWidth={1.5} transparent opacity={0.8 * opacity} />
+      {hollow ? (
+        <Billboard position={n}>
+          <mesh>
+            <ringGeometry args={[size * 0.5, size, 32]} />
+            <meshBasicMaterial color={color} transparent opacity={opacity} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh>
+            <circleGeometry args={[size * 0.5, 24]} />
+            <meshBasicMaterial color={COLORS.bg} transparent opacity={opacity} />
+          </mesh>
+        </Billboard>
+      ) : (
+        <mesh position={n}>
+          <sphereGeometry args={[size, 20, 16]} />
+          <meshBasicMaterial color={color} transparent opacity={opacity} />
+        </mesh>
       )}
-      {label && <Label3D position={scale3(normalize3(v), len3(v) + 0.2)} tex={label} color={color} size={12.5} opacity={opacity} />}
+      {ring && <Line points={circlePoints(normalize3(v), v, size * 2.2, 40)} color={color} lineWidth={1.3} transparent opacity={0.8 * opacity} />}
+      {label && <Label3D position={scale3(normalize3(v), len3(v) + 0.2)} tex={label} color={color} size={13} opacity={opacity} />}
     </group>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Axis line (rotation axis, measurement axis)
+// Axis line (rotation axis, measurement axis) — a construction, so dashed by default
 // ---------------------------------------------------------------------------
 
 export function AxisLine({
   n,
   color = COLORS.axis,
   length = 1.42,
-  dashed = false,
+  dashed = true,
   label,
-  lineWidth = 2,
+  lineWidth = 1.6,
   opacity = 1,
   bothArrows = false,
 }: {
@@ -115,18 +161,18 @@ export function AxisLine({
   const b = toThree(scale3(u, length));
   return (
     <group>
-      <Line points={[a, b]} color={color} lineWidth={lineWidth} dashed={dashed} dashSize={0.06} gapSize={0.045} transparent opacity={opacity} />
+      <Line points={[a, b]} color={color} lineWidth={lineWidth} dashed={dashed} dashSize={0.07} gapSize={0.045} transparent opacity={opacity} />
       <mesh position={b} quaternion={quatFor(toThree(u))}>
-        <coneGeometry args={[0.04, 0.11, 20]} />
+        <coneGeometry args={[0.034, 0.1, 20]} />
         <meshBasicMaterial color={color} transparent opacity={opacity} />
       </mesh>
       {bothArrows && (
         <mesh position={a} quaternion={quatFor(toThree(scale3(u, -1)))}>
-          <coneGeometry args={[0.04, 0.11, 20]} />
+          <coneGeometry args={[0.034, 0.1, 20]} />
           <meshBasicMaterial color={color} transparent opacity={opacity} />
         </mesh>
       )}
-      {label && <Label3D position={scale3(u, length + 0.16)} tex={label} color={color} size={12.5} />}
+      {label && <Label3D position={scale3(u, length + 0.16)} tex={label} color={color} size={13} />}
     </group>
   );
 }
@@ -135,24 +181,31 @@ export function AxisLine({
 // Trails, orbits and arcs
 // ---------------------------------------------------------------------------
 
-/** Polyline through Bloch-space points; `fade` fades the oldest points out. */
-export function Trail({ points, color = COLORS.state, lineWidth = 2, fade = true, opacity = 1, dashed = false }: { points: Vec3[]; color?: string; lineWidth?: number; fade?: boolean; opacity?: number; dashed?: boolean }) {
+/**
+ * Polyline through Bloch-space points; `fade` fades the oldest points out. With the default ink
+ * colour each point takes the hue of its relative phase, so a precession draws the phase wheel.
+ */
+export function Trail({ points, color: given, lineWidth = 2, fade = true, opacity = 1, dashed = false }: { points: Vec3[]; color?: string; lineWidth?: number; fade?: boolean; opacity?: number; dashed?: boolean }) {
+  // the state's own path (no colour given) is drawn in phase hues; explicit colours are kept
+  const color = given ?? COLORS.state;
+  const byPhase = given === undefined || given.toLowerCase() === COLORS.state.toLowerCase();
   const { pts, colors } = useMemo(() => {
     const pts = points.map((p) => toThree(p));
-    const base = new THREE.Color(color);
     const bg = new THREE.Color(COLORS.bg);
-    const colors = points.map((_, i) => {
-      const f = fade ? 0.15 + 0.85 * (i / Math.max(1, points.length - 1)) : 1;
-      return bg.clone().lerp(base, f);
+    const base = new THREE.Color(color);
+    const colors = points.map((p, i) => {
+      const f = fade ? 0.12 + 0.88 * (i / Math.max(1, points.length - 1)) : 1;
+      const hue = byPhase ? azimuthHue(p) : null;
+      return bg.clone().lerp(hue ? new THREE.Color(hue) : base, f);
     });
     return { pts, colors };
-  }, [points, color, fade]);
+  }, [points, color, fade, byPhase]);
   if (pts.length < 2) return null;
   return <Line points={pts} vertexColors={colors as unknown as [number, number, number][]} color="white" lineWidth={lineWidth} transparent={opacity < 1} opacity={opacity} dashed={dashed} dashSize={0.05} gapSize={0.04} />;
 }
 
 /** The full circle a point p sweeps out when rotated about axis n (precession cone rim). */
-export function OrbitCircle({ n, through, color = COLORS.axis, opacity = 0.45, dashed = true, lineWidth = 1.2 }: { n: Vec3; through: Vec3; color?: string; opacity?: number; dashed?: boolean; lineWidth?: number }) {
+export function OrbitCircle({ n, through, color = COLORS.axis, opacity = 0.5, dashed = true, lineWidth = 1 }: { n: Vec3; through: Vec3; color?: string; opacity?: number; dashed?: boolean; lineWidth?: number }) {
   const pts = useMemo(() => {
     const u = normalize3(n);
     const center = scale3(u, dot3(through, u));
@@ -161,11 +214,11 @@ export function OrbitCircle({ n, through, color = COLORS.axis, opacity = 0.45, d
     return circlePoints(u, center, rho);
   }, [n, through]);
   if (!pts) return null;
-  return <Line points={pts} color={color} lineWidth={lineWidth} dashed={dashed} dashSize={0.05} gapSize={0.04} transparent opacity={opacity} />;
+  return <Line points={pts} color={color} lineWidth={lineWidth} dashed={dashed} dashSize={0.04} gapSize={0.035} transparent opacity={opacity} />;
 }
 
 /** Arc traced by rotating `from` about n by `angle` (right-hand rule), with an arrowhead. */
-export function RotationArc({ n, from, angle, color = COLORS.axis, label, lineWidth = 2.4 }: { n: Vec3; from: Vec3; angle: number; color?: string; label?: string; lineWidth?: number }) {
+export function RotationArc({ n, from, angle, color = COLORS.axis, label, lineWidth = 2 }: { n: Vec3; from: Vec3; angle: number; color?: string; label?: string; lineWidth?: number }) {
   const data = useMemo(() => {
     if (Math.abs(angle) < 1e-4) return null;
     const segs = Math.max(8, Math.ceil(Math.abs(angle) * 30));
@@ -183,11 +236,11 @@ export function RotationArc({ n, from, angle, color = COLORS.axis, label, lineWi
       <Line points={data.pts} color={color} lineWidth={lineWidth} />
       {chord > 1e-3 && (
         <mesh position={toThree(data.end)} quaternion={quatFor(data.tangent)}>
-          <coneGeometry args={[0.035, 0.09, 16]} />
+          <coneGeometry args={[0.03, 0.085, 16]} />
           <meshBasicMaterial color={color} />
         </mesh>
       )}
-      {label && <Label3D position={scale3(normalize3(data.mid), 1.18)} tex={label} color={color} size={12.5} />}
+      {label && <Label3D position={scale3(normalize3(data.mid), 1.18)} tex={label} color={color} size={13} />}
     </group>
   );
 }
@@ -236,14 +289,16 @@ export function AngleGuides({ v, highlight }: { v: Vec3; highlight?: string | nu
       thetaArc.push(toThree([R1 * Math.sin(t) * Math.cos(phi), R1 * Math.sin(t) * Math.sin(phi), R1 * Math.cos(t)]));
     }
     const phiArc: THREE.Vector3[] = [];
+    const phiCols: THREE.Color[] = [];
     const R2 = 0.42;
     for (let k = 0; k <= 48; k++) {
       const p = (phi * k) / 48;
       phiArc.push(toThree([R2 * Math.cos(p), R2 * Math.sin(p), 0]));
+      phiCols.push(new THREE.Color(phaseColor(p)));
     }
     const tl: Vec3 = [0.5 * Math.sin(theta / 2) * Math.cos(phi), 0.5 * Math.sin(theta / 2) * Math.sin(phi), 0.5 * Math.cos(theta / 2)];
     const pl: Vec3 = [0.56 * Math.cos(phi / 2), 0.56 * Math.sin(phi / 2), 0];
-    return { theta, phi, rho, proj, thetaArc, phiArc, tl, pl };
+    return { theta, phi, rho, proj, thetaArc, phiArc, phiCols, tl, pl };
   }, [v]);
   const hotT = highlight === 'theta';
   const hotP = highlight === 'phi';
@@ -251,20 +306,19 @@ export function AngleGuides({ v, highlight }: { v: Vec3; highlight?: string | nu
     <group>
       {data.rho > 1e-3 && (
         <>
-          <Line points={[toThree(v), toThree(data.proj)]} color={COLORS.faint} lineWidth={1} dashed dashSize={0.04} gapSize={0.03} />
-          <Line points={[new THREE.Vector3(0, 0, 0), toThree(data.proj)]} color={hotP ? COLORS.phase : COLORS.faint} lineWidth={hotP ? 2 : 1} dashed dashSize={0.04} gapSize={0.03} />
+          <Line points={[new THREE.Vector3(0, 0, 0), toThree(data.proj)]} color={hotP ? phaseColor(data.phi) : COLORS.faint} lineWidth={hotP ? 2 : 1} dashed dashSize={0.04} gapSize={0.03} />
         </>
       )}
       {data.theta > 1e-3 && (
         <>
-          <Line points={data.thetaArc} color={COLORS.text} lineWidth={hotT ? 3 : 1.4} transparent opacity={hotT ? 1 : 0.7} />
+          <Line points={data.thetaArc} color={COLORS.text} lineWidth={hotT ? 2.6 : 1.2} transparent opacity={hotT ? 1 : 0.75} />
           <Label3D position={data.tl} tex="\theta" color={hotT ? COLORS.text : COLORS.muted} size={hotT ? 15 : 12.5} />
         </>
       )}
       {data.rho > 1e-3 && data.phi > 1e-3 && (
         <>
-          <Line points={data.phiArc} color={COLORS.phase} lineWidth={hotP ? 3 : 1.4} transparent opacity={hotP ? 1 : 0.75} />
-          <Label3D position={data.pl} tex="\varphi" color={COLORS.phase} size={hotP ? 15 : 12.5} />
+          <Line points={data.phiArc} vertexColors={data.phiCols as unknown as [number, number, number][]} color="white" lineWidth={hotP ? 3 : 1.8} />
+          <Label3D position={data.pl} tex="\varphi" color={phaseColor(data.phi)} size={hotP ? 15.5 : 13} />
         </>
       )}
     </group>
@@ -384,7 +438,7 @@ export function DragHandle({ v, onChange, color = COLORS.state, onDragStart, onD
         }}
       >
         <sphereGeometry args={[0.13, 20, 16]} />
-        <meshBasicMaterial color={color} transparent opacity={hover ? 0.2 : 0.06} depthWrite={false} />
+        <meshBasicMaterial color={color} transparent opacity={hover ? 0.14 : 0.035} depthWrite={false} />
       </mesh>
     </group>
   );

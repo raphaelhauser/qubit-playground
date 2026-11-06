@@ -448,7 +448,7 @@ const CONCEPTS: Concept[] = [
     explanation: (
       <p>
         {M`e^{-iHt} = e^{-i\bar\omega t}\,e^{-irt(\vec v\cdot\vec\sigma)}`}: the identity part factors out as a pure global phase, because {M`I`} commutes with everything. Slide {M`\bar\omega`} in the
-        visualization: the gold "shifted" arrow sits exactly on top of the blue one, while in the complex plane the amplitudes spin at a different rate.
+        visualization: the pencil "shifted" arrow sits exactly on top of the ink one, while in the complex plane the amplitudes spin at a different rate.
       </p>
     ),
     Viz: () => (
@@ -456,8 +456,8 @@ const CONCEPTS: Concept[] = [
         mode="pauli"
         initial={{ omegaBar: 0, deltaOmega: 0.5, epsilon: 0.6 }}
         compareShift={1.5}
-        title="Gold: the same H with ω̄ raised by 1.5"
-        note={<>Gold arrow and dashed gold amplitudes: {M`H + 1.5\,I`}. On the sphere they coincide with {M`H`}; only the amplitudes' common phase differs.</>}
+        title="Ghost: the same H with ω̄ raised by 1.5"
+        note={<>Ghost arrow and dashed amplitudes: {M`H + 1.5\,I`}. On the sphere they coincide with {M`H`}; only the amplitudes' common phase differs.</>}
       />
     ),
     explore: { path: '/hamiltonian', label: 'Hamiltonian playground' },
@@ -644,8 +644,8 @@ function Quiz({ concept, chosen, onChoose }: { concept: Concept; chosen: string 
   const right = chosen === concept.answer;
   const fb = committed ? concept.options.find((o) => o.id === chosen)?.feedback : null;
   return (
-    <div className="rounded-xl border border-phase/25 bg-gradient-to-b from-phase/[0.07] to-transparent p-4">
-      <div className="mb-2 flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-phase">{Icon.bulb} Predict first</div>
+    <div className="rounded-[10px] bg-ink-850 p-4 ring-1 ring-inset ring-ink-700">
+      <div className="mb-2 font-mono text-[10.5px] tracking-[0.05em] text-ink-400">predict first</div>
       <div className="prose-q mb-3 text-[14.5px] text-ink-100">{concept.question}</div>
       <div className="space-y-1.5">
         {concept.options.map((o) => {
@@ -699,9 +699,9 @@ export default function ConceptsModule({ subpath }: { subpath: string }) {
   }, [concept.id]);
   const done = CONCEPTS.filter((x) => answers[x.id] !== undefined).length;
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 pb-16 pt-5 lg:px-6">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-state/80">Transfer</div>
-      <h1 className="text-[22px] font-semibold tracking-tight text-ink-100 lg:text-[26px]">Concept challenges</h1>
+    <div className="mx-auto w-full max-w-[1560px] px-4 pb-16 pt-7 lg:px-8">
+      <div className="font-mono text-[11px] tracking-[0.06em] text-ink-400">transfer</div>
+      <h1 className="mt-1.5 text-[30px] font-semibold leading-[1.06] tracking-[-0.02em] text-ink-100 lg:text-[40px]">Concept challenges</h1>
       <p className="mt-2 max-w-[860px] text-[14px] leading-relaxed text-ink-300">
         Questions that test understanding rather than algebra. Commit to a prediction, then check it against the explanation and the live simulation. {done}/{CONCEPTS.length} answered.
       </p>

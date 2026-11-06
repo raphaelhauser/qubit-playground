@@ -41,6 +41,27 @@ GitHub Pages on every push to `main`. In the repository settings, set
 | ✎ | Guided exercises | 11 step-by-step problems on time evolution, Pauli algebra and measurement |
 | ? | Concept challenges | transfer questions with predictions |
 
+## Design
+
+The app is set like an illustrated physics text rather than a dashboard: a text serif
+(Source Serif 4) that sits next to KaTeX's Computer Modern, IBM Plex Mono for instrument
+labels and numbers, hairline rules instead of boxes, and two themes — *graphite* (dark) and
+*paper* (light) — chosen from the system setting and switchable in the top bar.
+
+Every figure follows one visual grammar:
+
+1. **Ink is the state.** The Bloch vector and the ket are drawn in full-strength ink.
+2. **Hue is phase.** Colour always means a complex phase, read on a perceptually uniform
+   (OKLCH) phase wheel: the equator of the Bloch sphere, the rim of the complex plane, the tip
+   of the state arrow, the trail of an evolving state, and the atoms in the Stern–Gerlach beam
+   (which visibly change colour when a measurement collapses them).
+3. **Dashes are constructions.** Rotation axes, measurement directions and projections.
+4. **Filled vs hollow is the outcome.** + / 0 / ↑ filled; − / 1 / ↓ hollow or hatched.
+
+Chapter pages use a "lab bench" layout: the figure stays pinned on the left while the
+controls and the mathematics scroll beside it. Colour tokens live in `src/theme.ts`, which
+writes CSS variables for Tailwind and exposes live values to the WebGL and SVG figures.
+
 ## Conventions
 
 * ħ = 1.

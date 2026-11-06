@@ -195,9 +195,9 @@ export function RotationOrderPanel({ ro }: { ro: RO }) {
         }}
         explanation={
           <p>
-            <Tex>{'R_x(\\pi/2)'}</Tex> takes <Tex>{'\\ket0'}</Tex> to <Tex>{'\\ket{-i}'}</Tex>, which lies on the y axis, so the following <Tex>{'R_y'}</Tex> does nothing: the teal
+            <Tex>{'R_x(\\pi/2)'}</Tex> takes <Tex>{'\\ket0'}</Tex> to <Tex>{'\\ket{-i}'}</Tex>, which lies on the y axis, so the following <Tex>{'R_y'}</Tex> does nothing: the ink
             path ends at <Tex>{'-y'}</Tex>. In the other order <Tex>{'R_y(\\pi/2)'}</Tex> takes <Tex>{'\\ket0'}</Tex> to <Tex>{'\\ket{+}'}</Tex> on the x axis and <Tex>{'R_x'}</Tex>{' '}
-            leaves it there: the coral path ends at <Tex>{'+x'}</Tex>. Orthogonal-on-the-sphere endings (fidelity 1/2). Finite rotations about different axes do not commute,
+            leaves it there: the grey path ends at <Tex>{'+x'}</Tex>. Orthogonal-on-the-sphere endings (fidelity 1/2). Finite rotations about different axes do not commute,
             because <Tex>{'X'}</Tex> and <Tex>{'Y'}</Tex> do not.
           </p>
         }

@@ -85,7 +85,7 @@ function TipBubble({ tip }: { tip: Tip }) {
   return (
     <div
       role="tooltip"
-      className="pointer-events-none fixed z-[100] animate-fadein rounded-lg border border-ink-600 bg-ink-800/95 px-3 py-2 text-[12.5px] leading-snug text-ink-100 shadow-panel backdrop-blur"
+      className="pointer-events-none fixed z-[100] animate-fadein rounded-[8px] bg-ink-100 px-3 py-2 text-[13px] leading-snug text-ink-900 shadow-float"
       style={{ left, top, width: w, transform: below ? undefined : 'translateY(-100%)' }}
     >
       {tip.text}

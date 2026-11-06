@@ -406,7 +406,7 @@ function Preview({ tex, error }: { tex: string | null; error: string | null }) {
   if (!tex) return null;
   return (
     <div className="mt-1.5 flex items-center gap-2 overflow-x-auto text-[13px] text-ink-300">
-      <span className="shrink-0 text-[11px] uppercase tracking-wider text-ink-500">read as</span>
+      <span className="shrink-0 font-mono text-[10.5px] tracking-[0.05em] text-ink-500">read as</span>
       <Tex>{tex}</Tex>
     </div>
   );
@@ -720,7 +720,7 @@ export function StepCard({
     status === 'solved' ? (
       <span className="inline-flex items-center gap-1 rounded-full bg-good/15 px-2 py-0.5 text-[11px] font-medium text-good">{Icon.check} solved</span>
     ) : status === 'revealed' ? (
-      <span className="rounded-full bg-phase/15 px-2 py-0.5 text-[11px] font-medium text-phase">solution viewed</span>
+      <span className="rounded-full px-2 py-0.5 font-mono text-[10.5px] text-ink-300 ring-1 ring-inset ring-ink-500">solution viewed</span>
     ) : (
       <span className="rounded-full bg-ink-700 px-2 py-0.5 text-[11px] font-medium text-ink-300">
         step {index + 1} / {total}
@@ -729,7 +729,7 @@ export function StepCard({
 
   if (collapsed && done) {
     return (
-      <div className="rounded-xl border border-ink-700/70 bg-ink-850/60 px-4 py-2.5">
+      <div className="rounded-[10px] px-4 py-2.5 ring-1 ring-inset ring-ink-700">
         <button className="flex w-full items-center justify-between gap-3 text-left" onClick={() => setCollapsed(false)}>
           <span className="min-w-0 truncate text-[13px] text-ink-300">
             <span className="mr-2 text-ink-500">{index + 1}.</span>
@@ -743,9 +743,9 @@ export function StepCard({
 
   const disabled = done;
   return (
-    <div className={`animate-fadein rounded-xl border bg-ink-850/90 p-4 shadow-panel ${status === 'open' ? 'border-ink-600' : 'border-ink-700/70'}`}>
+    <div className={`animate-fadein rounded-[10px] bg-ink-850 p-4 ring-1 ring-inset ${status === 'open' ? 'ring-ink-500' : 'ring-ink-700'}`}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">Step {index + 1}</span>
+        <span className="font-mono text-[10.5px] tracking-[0.05em] text-ink-400">step {index + 1}</span>
         <div className="flex items-center gap-2">
           {statusBadge}
           {done && (
@@ -778,8 +778,8 @@ export function StepCard({
       {hints > 0 && (
         <div className="mt-3 space-y-1.5">
           {step.hints.slice(0, hints).map((h, i) => (
-            <div key={i} className="animate-fadein rounded-lg border border-state/20 bg-state/[0.05] px-3 py-2 text-[13px] text-ink-200">
-              <span className="mr-1.5 text-[11px] font-semibold uppercase tracking-wider text-state">Hint {i + 1}</span>
+            <div key={i} className="animate-fadein border-l-2 border-ink-500 py-1 pl-3 text-[14px] text-ink-200">
+              <span className="mr-1.5 font-mono text-[10.5px] tracking-[0.05em] text-ink-400">hint {i + 1}</span>
               <span className="prose-q">{h}</span>
             </div>
           ))}
@@ -811,8 +811,8 @@ export function StepCard({
       </div>
 
       {showSol && (
-        <div className="mt-3 animate-fadein rounded-lg border border-phase/25 bg-phase/[0.05] px-3 py-2.5">
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-phase">Solution</div>
+        <div className="mt-3 animate-fadein border-l-2 border-ink-300 py-1 pl-3">
+          <div className="mb-1 font-mono text-[10.5px] tracking-[0.05em] text-ink-400">solution</div>
           <div className="prose-q text-[13px]">{step.solution}</div>
         </div>
       )}

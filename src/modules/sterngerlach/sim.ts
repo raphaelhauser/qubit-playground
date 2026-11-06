@@ -519,10 +519,10 @@ export class SGEngine {
   }
 
   /** Current drawable positions. */
-  positions(): { x: number; y: number; last: 0 | Outcome }[] {
+  positions(): { x: number; y: number; last: 0 | Outcome; bloch: Vec3 }[] {
     return this.particles.map((p) => {
       const [x, y] = pointAt(p.path, p.s);
-      return { x, y: y + p.jitter, last: p.last };
+      return { x, y: y + p.jitter, last: p.last, bloch: blochVector(p.psi) };
     });
   }
 

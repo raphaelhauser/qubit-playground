@@ -8,7 +8,7 @@ import { Card, Slider, Button, KV, Callout, Label, Swatch, Icon } from '../../co
 import { PredictionCard } from '../../components/Prediction';
 import { useHighlight } from '../../components/Highlight';
 import { useRaf } from '../../hooks/animation';
-import { COLORS } from '../../theme';
+import { COLORS, phaseColor } from '../../theme';
 import {
   PRESETS,
   stateFromAngles,
@@ -99,7 +99,7 @@ export default function BlochModule(_props: { subpath: string }) {
       <Card title="State parameters" kicker="drive the state">
         <div className="space-y-3">
           <Slider tex="\theta" label="polar angle" value={theta} min={0} max={Math.PI} onChange={(v) => { setTheta(v); }} format={(v) => texAngle(v, { inline: true })} hl="theta" color={COLORS.text} />
-          <Slider tex="\varphi" label="relative phase" value={phi} min={0} max={TWO_PI} onChange={(v) => { setAnim(null); setPhi(v); }} format={(v) => texAngle(v, { inline: true })} hl="phi" color={COLORS.phase} />
+          <Slider tex="\varphi" label="relative phase" value={phi} min={0} max={TWO_PI} onChange={(v) => { setAnim(null); setPhi(v); }} format={(v) => texAngle(v, { inline: true })} hl="phi" color={phaseColor(phi)} />
           <div>
             <Label className="mb-1.5">presets</Label>
             <div className="flex flex-wrap gap-1.5">
@@ -124,7 +124,7 @@ export default function BlochModule(_props: { subpath: string }) {
       </Card>
       <Card title="Phase lab" kicker="global vs relative phase">
         <div className="space-y-3">
-          <Slider tex="\gamma" label="global phase" value={gamma} min={0} max={TWO_PI} onChange={(v) => { setAnim(null); setGamma(v); }} format={(v) => texAngle(v, { inline: true })} hl="gamma" color={COLORS.phase} />
+          <Slider tex="\gamma" label="global phase" value={gamma} min={0} max={TWO_PI} onChange={(v) => { setAnim(null); setGamma(v); }} format={(v) => texAngle(v, { inline: true })} hl="gamma" color={phaseColor(gamma)} />
           <div className="flex flex-wrap gap-1.5">
             <Button size="sm" active={anim === 'phi'} onClick={() => setAnim(anim === 'phi' ? null : 'phi')}>
               {anim === 'phi' ? Icon.pause : Icon.play} sweep relative phase φ
@@ -196,7 +196,7 @@ export default function BlochModule(_props: { subpath: string }) {
           </table>
         </div>
         <div className="mt-2 text-[12px] text-ink-400">
-          Relative phase <Tex>{'\\arg\\beta - \\arg\\alpha'}</Tex> = <span className="font-mono text-phase">{fmtAngle(phi)}</span> — the golden arc. It is the only phase the Bloch sphere sees.
+          Relative phase <Tex>{'\\arg\\beta - \\arg\\alpha'}</Tex> = <span className="font-mono" style={{ color: phaseColor(phi) }}>{fmtAngle(phi)}</span> — the arc drawn in the hue of that phase, the same hue as the state's tip on the sphere. It is the only phase the Bloch sphere sees.
         </div>
       </Card>
 

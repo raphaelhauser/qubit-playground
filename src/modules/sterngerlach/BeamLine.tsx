@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { COLORS } from '../../theme';
+import { COLORS, phaseColor } from '../../theme';
 import type { ChainPrediction } from '../../quantum';
 import { SGEngine, Layout, StageCfg, SourceCfg, Stats, VW, VH, CY, OVEN, SCREEN, BOX, outcomeLabels, axisName } from './sim';
 
-const UNMEASURED = '#cfd6e4';
 
 function pathD(pts: [number, number][]): string {
   return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
@@ -101,6 +100,7 @@ export function BeamLine({
       const oy = (H - VH * sc) / 2;
       ctx.setTransform(dpr * sc, 0, 0, dpr * sc, dpr * ox, dpr * oy);
       // detector spots
+      // + spots filled, − spots hollow (rule 4)
       for (const plus of [true, false]) {
         ctx.beginPath();
         for (const s of engine.spots) {
@@ -108,35 +108,37 @@ export function BeamLine({
           ctx.moveTo(s.x + 1.7, s.y);
           ctx.arc(s.x, s.y, 1.7, 0, 2 * Math.PI);
         }
-        ctx.fillStyle = plus ? COLORS.p0 : COLORS.p1;
-        ctx.globalAlpha = 0.5;
-        ctx.fill();
-      }
-      // atoms: soft halo + core, batched per colour
-      const pos = engine.positions();
-      const groups: [0 | 1 | -1, string][] = [
-        [0, UNMEASURED],
-        [1, COLORS.p0],
-        [-1, COLORS.p1],
-      ];
-      for (const [g, col] of groups) {
-        ctx.fillStyle = col;
-        ctx.globalAlpha = 0.18;
-        ctx.beginPath();
-        for (const p of pos) {
-          if (p.last !== g) continue;
-          ctx.moveTo(p.x + 5.5, p.y);
-          ctx.arc(p.x, p.y, 5.5, 0, 2 * Math.PI);
+        ctx.globalAlpha = 0.55;
+        if (plus) {
+          ctx.fillStyle = COLORS.p0;
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = COLORS.p1;
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
         }
+      }
+      // atoms: each drawn in the hue of its state's relative phase (ink on the z axis);
+      // filled after outcome + (or before any measurement), hollow after outcome −
+      const pos = engine.positions();
+      for (const p of pos) {
+        const [bx, by] = p.bloch;
+        const col = Math.hypot(bx, by) > 0.12 ? phaseColor(Math.atan2(by, bx)) : COLORS.state;
+        ctx.fillStyle = col;
+        ctx.globalAlpha = 0.16;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5.5, 0, 2 * Math.PI);
         ctx.fill();
         ctx.globalAlpha = 0.95;
         ctx.beginPath();
-        for (const p of pos) {
-          if (p.last !== g) continue;
-          ctx.moveTo(p.x + 2.6, p.y);
-          ctx.arc(p.x, p.y, 2.6, 0, 2 * Math.PI);
+        ctx.arc(p.x, p.y, 2.6, 0, 2 * Math.PI);
+        if (p.last === -1) {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1.1;
+          ctx.stroke();
+        } else {
+          ctx.fill();
         }
-        ctx.fill();
       }
       ctx.globalAlpha = 1;
     };
@@ -161,8 +163,8 @@ export function BeamLine({
           </linearGradient>
         </defs>
         {/* incoming beam from the oven */}
-        <path d={pathD(layout.inPath.pts)} stroke={UNMEASURED} strokeOpacity={0.12} strokeWidth={9} fill="none" strokeLinecap="round" />
-        <path d={pathD(layout.inPath.pts)} stroke={UNMEASURED} strokeOpacity={0.5} strokeWidth={1.4} fill="none" />
+        <path d={pathD(layout.inPath.pts)} stroke={COLORS.muted} strokeOpacity={0.12} strokeWidth={9} fill="none" strokeLinecap="round" />
+        <path d={pathD(layout.inPath.pts)} stroke={COLORS.muted} strokeOpacity={0.5} strokeWidth={1.4} fill="none" />
         {layout.out.map((pair, k) =>
           pair.map((o, j) => {
             const frac = j === 0 ? theory.outPlus[k] : theory.outMinus[k];
@@ -177,7 +179,7 @@ export function BeamLine({
           }),
         )}
         {/* screen */}
-        <rect x={SCREEN.x} y={SCREEN.y0} width={SCREEN.w} height={SCREEN.y1 - SCREEN.y0} rx={2} fill="#151922" stroke={COLORS.gridStrong} />
+        <rect x={SCREEN.x} y={SCREEN.y0} width={SCREEN.w} height={SCREEN.y1 - SCREEN.y0} rx={2} fill={COLORS.panel} stroke={COLORS.gridStrong} />
         {showClassical && (
           <g>
             <rect x={SCREEN.x - 3} y={layout.hitY.plus - 12} width={SCREEN.w + 6} height={layout.hitY.minus - layout.hitY.plus + 24} fill="url(#sg-classical)" rx={3} />
@@ -195,7 +197,7 @@ export function BeamLine({
       <svg viewBox={`0 0 ${VW} ${VH}`} className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid meet">
         {/* oven */}
         <g>
-          <rect x={OVEN.x} y={OVEN.y} width={OVEN.w} height={OVEN.h} rx={8} fill="#1a1f2a" stroke={COLORS.gridStrong} strokeWidth={1.2} />
+          <rect x={OVEN.x} y={OVEN.y} width={OVEN.w} height={OVEN.h} rx={8} fill={COLORS.panel} stroke={COLORS.gridStrong} strokeWidth={1.2} />
           <text x={OVEN.x + OVEN.w / 2} y={CY - 4} fill={COLORS.text} fontSize={16} textAnchor="middle" fontWeight={600}>
             {source.kind === 'unpolarized' ? 'oven' : 'source'}
           </text>
@@ -219,7 +221,7 @@ export function BeamLine({
                 width={BOX.w}
                 height={BOX.h}
                 rx={9}
-                fill={sel ? '#1d2230' : '#171b25'}
+                fill={sel ? COLORS.grid : COLORS.panel}
                 stroke={sel ? COLORS.axis : COLORS.gridStrong}
                 strokeWidth={sel ? 2 : 1.2}
               />
@@ -249,13 +251,13 @@ export function BeamLine({
             return (
               <g key={`l${k}-${j}`} className="cursor-pointer" onClick={() => onToggleBeam(k, j === 0 ? 1 : -1)}>
                 {o.stop && (
-                  <rect x={o.stop[0] - 1} y={o.stop[1] - 8} width={9} height={16} rx={1.5} fill="#0b0d12" stroke={COLORS.muted} strokeWidth={1.2} />
+                  <rect x={o.stop[0] - 1} y={o.stop[1] - 8} width={9} height={16} rx={1.5} fill={COLORS.bg} stroke={COLORS.muted} strokeWidth={1.2} />
                 )}
-                <rect x={o.labelAt[0] - 24} y={o.labelAt[1] - 13} width={sym.length > 1 ? 84 : 76} height={24} rx={7} fill="#0b0d12" fillOpacity={0.7} stroke={col} strokeOpacity={0.25} />
+                <rect x={o.labelAt[0] - 24} y={o.labelAt[1] - 13} width={sym.length > 1 ? 84 : 76} height={24} rx={7} fill={COLORS.bg} fillOpacity={0.7} stroke={col} strokeOpacity={0.25} />
                 <text x={o.labelAt[0] - 16} y={o.labelAt[1] + 5} fill={col} fontSize={15} fontWeight={700}>
                   {sym}
                 </text>
-                <text x={o.labelAt[0] + (sym.length > 1 ? 10 : 2)} y={o.labelAt[1] + 4.5} fill={blocked ? COLORS.faint : COLORS.text} fontSize={13} fontFamily="JetBrains Mono, monospace">
+                <text x={o.labelAt[0] + (sym.length > 1 ? 10 : 2)} y={o.labelAt[1] + 4.5} fill={blocked ? COLORS.faint : COLORS.text} fontSize={13} fontFamily="IBM Plex Mono, monospace">
                   {blocked ? 'block' : pctText(cond(j))}
                 </text>
               </g>
@@ -273,10 +275,10 @@ export function BeamLine({
               <text x={SCREEN.x + SCREEN.w + 8} y={y - 4} fill={which === 'plus' ? COLORS.p0 : COLORS.p1} fontSize={16} fontWeight={700}>
                 {which === 'plus' ? lab.plus : lab.minus}
               </text>
-              <text x={SCREEN.x + SCREEN.w + 8} y={y + 13} fill={COLORS.text} fontSize={13} fontFamily="JetBrains Mono, monospace">
+              <text x={SCREEN.x + SCREEN.w + 8} y={y + 13} fill={COLORS.text} fontSize={13} fontFamily="IBM Plex Mono, monospace">
                 {cnt}
               </text>
-              <text x={SCREEN.x + SCREEN.w + 8} y={y + 28} fill={COLORS.muted} fontSize={11.5} fontFamily="JetBrains Mono, monospace">
+              <text x={SCREEN.x + SCREEN.w + 8} y={y + 28} fill={COLORS.muted} fontSize={11.5} fontFamily="IBM Plex Mono, monospace">
                 {stats.emitted ? pctText(cnt / emitted) : pctText(th)}
               </text>
             </g>
