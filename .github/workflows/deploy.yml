@@ -9,6 +9,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  deployments: read
 
 concurrency:
   group: pages
@@ -37,5 +38,23 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # A deployment that times out in GitHub's Pages queue can stay "in progress" on the Pages
+      # side and block every later deployment. Cancel earlier deployments that never succeeded;
+      # the live (successful) deployment is never touched.
+      - name: Cancel stuck Pages deployments
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$REPO/deployments?environment=github-pages&per_page=20" --jq '.[] | "\(.id) \(.sha)"' |
+          while read -r id sha; do
+            [ "$sha" = "$GITHUB_SHA" ] && continue
+            state=$(gh api "repos/$REPO/deployments/$id/statuses" --jq '.[0].state // "none"')
+            if [ "$state" != "success" ] && [ "$state" != "inactive" ]; then
+              if gh api -X POST "repos/$REPO/pages/deployments/$sha/cancel" >/dev/null 2>&1; then
+                echo "cancelled stuck Pages deployment $sha"
+              fi
+            fi
+          done
       - id: deployment
         uses: actions/deploy-pages@v4
